@@ -5,7 +5,7 @@
 -- DROP TABLE "indexes".euribor;
 
 CREATE TABLE "indexes".euribor (
-	eur_date date NULL,
+	eur_date date PRIMARY KEY,
 	eur_1w numeric NULL,
 	eur_1m numeric NULL,
 	eur_3m numeric NULL,

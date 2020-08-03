@@ -19,7 +19,6 @@ class Postgre:
     def close(self):
         if self.conn:
             self.conn.commit()
-            self.cursor.close()
             self.conn.close()
 
     def insert_many_dict(self, table_name, keys, values):
