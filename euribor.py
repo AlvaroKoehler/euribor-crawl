@@ -109,13 +109,21 @@ class EuriborCrawl:
             if q_filter and q_filter in df_built.columns:
                 df = df_built[[q_filter]].reset_index()
                 df.rename(columns={'index': 'date'}, inplace=True)
-                df['date'] = pd.to_datetime(df['date'], dayfirst=True)
+                df['date'] = pd.to_datetime(
+                    df['date'], 
+                    dayfirst=True, 
+                    format=EU_TIME_FORMAT
+                    )
                 return df
             else:
                 cols = ['1w', '1m', '3m', '6m', '12m']
                 df = df_built[cols].reset_index()
                 df.rename(columns={'index': 'date'}, inplace=True)
-                df['date'] = pd.to_datetime(df['date'], dayfirst=True)
+                df['date'] = pd.to_datetime(
+                    df['date'], 
+                    dayfirst=True,
+                    format=EU_TIME_FORMAT
+                    )
                 return df
         except Exception as e:
             raise(e)
@@ -136,14 +144,16 @@ class EuriborCrawl:
         url = self._build_url()
         csv = pd.read_csv(url)
         last_items = csv[last_bday]
+    
         dict_euribor={
-            'eur_date': pd.to_datetime(last_bday),
+            'eur_date': pd.to_datetime(last_bday, format=EU_TIME_FORMAT),
             'eur_1w': last_items[0],
             'eur_1m': last_items[1],
             'eur_3m': last_items[2],
             'eur_6m': last_items[3],
             'eur_12m': last_items[4],
         }
+        print(dict_euribor)
         return dict_euribor
 
 
