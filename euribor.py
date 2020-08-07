@@ -143,8 +143,12 @@ class EuriborCrawl:
         last_bday = last_business_day(to_str=True)
         url = self._build_url()
         csv = pd.read_csv(url)
+        try:
+            assert(last_bday in csv.columns)
+        except AssertionError:
+            raise AssertionError(f'{last_bday} not in the index')
+
         last_items = csv[last_bday]
-    
         dict_euribor={
             'eur_date': pd.to_datetime(last_bday, format=EU_TIME_FORMAT),
             'eur_1w': last_items[0],
@@ -155,7 +159,3 @@ class EuriborCrawl:
         }
         print(dict_euribor)
         return dict_euribor
-
-
-
-
