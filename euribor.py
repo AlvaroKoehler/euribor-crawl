@@ -1,70 +1,8 @@
+from utils import EU_TIME_FORMAT, last_business_euribor_day
 import pandas as pd
 import datetime
-import json 
-from pandas.tseries.offsets import BDay
-
-EU_TIME_FORMAT = "%d/%m/%Y"
-
-def from_pd_to_jsons(df):
-    temp = df.reset_index(drop=True)
-    analyze = temp.to_json(orient="index", date_format = "iso")
-    parsed = json.loads(analyze)
-    list_of_dics = [value for value in parsed.values()]
-    return list_of_dics
 
 
-def last_business_euribor_day(offset=1, to_str=False, time_fmt=EU_TIME_FORMAT):
-    today = datetime.datetime.today()
-    # If is satudary or sunday we have to change the offset 
-    if today.weekday() == 5:
-        offset=2
-    elif today.weekday() == 6:
-        offset = 3
-    last_Bday = today - BDay(offset)
-    if to_str:
-        return last_Bday.strftime(time_fmt)
-    else:
-        return last_Bday
-
-'''
-    Websites to get information from:
-
-    Euribor Daily Rates
-    https://www.emmi-benchmarks.eu/euribor-org/euribor-rates.html
-
-    Euribor Calculation 
-    https://www.emmi-benchmarks.eu/assets/files/Euribor_tech_features.pdf
-
-    Statistical Data Warehouse - European Central Bank 
-    https://sdw.ecb.europa.eu/home.do;jsessionid=D0D170A9308EE0D95CFA78516F888A96
-
-    Suomen Pankki - Interest Rates
-    https://www.suomenpankki.fi/en/Statistics/interest-rates/charts/korot_kuviot/euriborkorot_pv_chrt_en/
-
-    Inflation 
-    https://www.ecb.europa.eu/mopo/html/index.en.html
-    https://www.ecb.europa.eu/stats/macroeconomic_and_sectoral/hicp/html/index.en.html
-
-    TeleTrader Dashboard
-    https://www.teletrader.com/bonds/libormatrix?ts=1595950241389
-
-'''
- 
-''' 
-    Utils 
-    https://www.expansion.com/blogs/conthe/2017/07/21/un-calculo-poco-armonico.html
-
-'''
-
-'''
-    ToRead
-
-    https://dominatuscuentas.wordpress.com/2016/02/05/euribor-el-bce-y-la-inflacion/
-    https://www.euribor.com.es/2020/05/04/el-retorno-de-la-inflacion/
-    https://www.rankia.com/blog/mejores-hipotecas/4413688-hipotecas-tipo-fijo-inflacion
-    https://www.euribor-rates.eu/es/que-es-el-euribor/
-    
-'''
 class EuriborCrawl:
     
     def __init__(self):
@@ -137,13 +75,13 @@ class EuriborCrawl:
     def build_history(self,from_date=2011):
         # Create an empty data frame 
         df_hist = pd.DataFrame()
-        
         # For every year, create data set and append it to the empty data farme
         for year in range(from_date, self.current_year + 1):
             df_temp = self.get_data_from_year(year)
             df_hist = df_hist.append(df_temp)
-        df_hist_formatted = self.format_times(df_hist)
-        return df_hist_formatted
+        df_hist['eur_year'] = df_hist.eur_date.dt.year
+        df_hist['eur_month'] = df_hist.eur_date.dt.month
+        return df_hist
 
     def get_last_euribor_rate(self):
         last_bday = last_business_euribor_day(to_str=True)
@@ -167,10 +105,3 @@ class EuriborCrawl:
             'eur_12m': last_items[4]
         }
         return dict_euribor
-
-    @staticmethod
-    def format_times(df):
-        df.set_index('eur_date', inplace=True)
-        df['eur_year'] = df.index.year
-        df['eur_month'] = df.index.month
-        return df

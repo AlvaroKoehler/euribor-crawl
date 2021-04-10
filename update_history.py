@@ -9,7 +9,9 @@ if __name__ == '__main__':
     db = Postgre()
     # Build history 
     items = ec.build_history()
-    
+    # We have to add a new column: time stamp insertion 
+    now = datetime.now()
+
     # Transform to json 
     items_json = euribor.from_pd_to_jsons(items)
     # Get keys example and give them the format we will use 
