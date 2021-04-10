@@ -2,14 +2,14 @@
 import euribor
 from db_manager import Postgre
 
-TABLE_NAME = 'indexes.euribor'
+TABLE_NAME = 'orchard.euribor'
 
 if __name__ == '__main__':
     ec = euribor.EuriborCrawl()
     db = Postgre()
     # Build history 
     items = ec.build_history()
-
+    
     # Transform to json 
     items_json = euribor.from_pd_to_jsons(items)
     # Get keys example and give them the format we will use 

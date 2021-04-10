@@ -2,7 +2,7 @@
 from euribor import EuriborCrawl
 from db_manager import Postgre
 
-TABLE_NAME = 'indexes.euribor'
+TABLE_NAME = 'orchard.euribor'
 
 def update_last_item():
     ec = EuriborCrawl()

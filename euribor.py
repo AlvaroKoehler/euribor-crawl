@@ -7,15 +7,19 @@ EU_TIME_FORMAT = "%d/%m/%Y"
 
 def from_pd_to_jsons(df):
     temp = df.reset_index(drop=True)
-    # temp['date'] = temp['date'].dt.strftime("%d/%m/%Y")
     analyze = temp.to_json(orient="index", date_format = "iso")
     parsed = json.loads(analyze)
     list_of_dics = [value for value in parsed.values()]
     return list_of_dics
 
 
-def last_business_day(offset=1, to_str=False, time_fmt="%d/%m/%Y"):
+def last_business_euribor_day(offset=1, to_str=False, time_fmt=EU_TIME_FORMAT):
     today = datetime.datetime.today()
+    # If is satudary or sunday we have to change the offset 
+    if today.weekday() == 5:
+        offset=2
+    elif today.weekday() == 6:
+        offset = 3
     last_Bday = today - BDay(offset)
     if to_str:
         return last_Bday.strftime(time_fmt)
@@ -105,42 +109,44 @@ class EuriborCrawl:
             del(t)
             del(t_clean)
             
-            # Return the result, filtered by time dimension if needed  
+            '''
+                Do we need a DF filtered by a particular time dimension** ?
+                    **time dimension: 1w, 1m, 3m, 6m, 12m
+
+                The df has got a date as index
+                I'm about to reset it and rename as date with the EU Format
+
+                Then I return it
+            '''
+            cols = ['1w', '1m', '3m', '6m', '12m']
             if q_filter and q_filter in df_built.columns:
-                df = df_built[[q_filter]].reset_index()
-                df.rename(columns={'index': 'date'}, inplace=True)
-                df['date'] = pd.to_datetime(
-                    df['date'], 
-                    dayfirst=True, 
-                    format=EU_TIME_FORMAT
-                    )
-                return df
-            else:
-                cols = ['1w', '1m', '3m', '6m', '12m']
-                df = df_built[cols].reset_index()
-                df.rename(columns={'index': 'date'}, inplace=True)
-                df['date'] = pd.to_datetime(
-                    df['date'], 
-                    dayfirst=True,
-                    format=EU_TIME_FORMAT
-                    )
-                return df
+                cols = q_filter
+            df = df_built[cols].reset_index()
+            df.rename(columns={'index': 'date'}, inplace=True)
+            df['date'] = pd.to_datetime(
+                df['date'], 
+                dayfirst=True,
+                format=EU_TIME_FORMAT
+                )
+            # Appending 'eur_' to each column
+            df.columns = ['eur_'+col for col in df.columns]
+            return df
         except Exception as e:
             raise(e)
  
-    def build_history(self,from_date=None):
+    def build_history(self,from_date=2011):
+        # Create an empty data frame 
         df_hist = pd.DataFrame()
- 
-        if not from_date:
-            from_date = 2010
         
+        # For every year, create data set and append it to the empty data farme
         for year in range(from_date, self.current_year + 1):
             df_temp = self.get_data_from_year(year)
             df_hist = df_hist.append(df_temp)
-        return df_hist
+        df_hist_formatted = self.format_times(df_hist)
+        return df_hist_formatted
 
     def get_last_euribor_rate(self):
-        last_bday = last_business_day(to_str=True)
+        last_bday = last_business_euribor_day(to_str=True)
         url = self._build_url()
         csv = pd.read_csv(url)
         try:
@@ -149,13 +155,22 @@ class EuriborCrawl:
             raise AssertionError(f'{last_bday} not in the index')
 
         last_items = csv[last_bday]
+        eur_date = pd.to_datetime(last_bday)
         dict_euribor={
-            'eur_date': pd.to_datetime(last_bday, format=EU_TIME_FORMAT),
+            'eur_date': eur_date.strftime(EU_TIME_FORMAT),
+            'eur_year': eur_date.year,
+            'eur_month': eur_date.month,
             'eur_1w': last_items[0],
             'eur_1m': last_items[1],
             'eur_3m': last_items[2],
             'eur_6m': last_items[3],
-            'eur_12m': last_items[4],
+            'eur_12m': last_items[4]
         }
-        print(dict_euribor)
         return dict_euribor
+
+    @staticmethod
+    def format_times(df):
+        df.set_index('eur_date', inplace=True)
+        df['eur_year'] = df.index.year
+        df['eur_month'] = df.index.month
+        return df
