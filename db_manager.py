@@ -4,14 +4,14 @@ from psycopg2.extras import execute_values
 from config import get_db_config 
 
 
-class Postgre:
+class Postgres:
     def __init__(self):
         try:
             self.params = get_db_config()
             self.conn = psycopg2.connect(**self.params)
             self.cur = self.conn.cursor()
         except (Exception, psycopg2.DatabaseError) as error:
-            print(error)
+            raise(error)
     
     def query(self, query):
         self.cur.execute(query)
