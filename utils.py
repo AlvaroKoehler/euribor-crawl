@@ -19,9 +19,9 @@ def last_business_euribor_day(offset=1, to_str=False, time_fmt=EU_TIME_FORMAT):
     today = datetime.today()
     # If is satudary or sunday we have to change the offset 
     if today.weekday() == 5:
-        offset=2
+        offset = 1
     elif today.weekday() == 6:
-        offset = 3
+        offset = 2
     last_Bday = today - BDay(offset)
     if to_str:
         return last_Bday.strftime(time_fmt)
