@@ -16,7 +16,7 @@ def from_pd_to_jsons(df):
     return list_of_dics
 
 def last_business_euribor_day(offset=1, to_str=False, time_fmt=EU_TIME_FORMAT):
-    today = datetime.datetime.today()
+    today = datetime.today()
     # If is satudary or sunday we have to change the offset 
     if today.weekday() == 5:
         offset=2

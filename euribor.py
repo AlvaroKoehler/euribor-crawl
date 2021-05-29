@@ -83,7 +83,7 @@ class EuriborCrawl:
         df_hist['eur_month'] = df_hist.eur_date.dt.month
         return df_hist
 
-    def get_last_euribor_rate(self):
+    def get_last_euribor_rate_dict(self):
         last_bday = last_business_euribor_day(to_str=True)
         url = self._build_url()
         csv = pd.read_csv(url)

@@ -8,7 +8,7 @@ def update_last_item():
     # TODO: Check if last working day has been already included into the system
     ec = EuriborCrawl()
     db = Postgres()
-    last_item = ec.get_last_euribor_rate()
+    last_item = ec.get_last_euribor_rate_dict()
     db.insert_dict(TABLE_NAME, last_item)
     db.close()
 
