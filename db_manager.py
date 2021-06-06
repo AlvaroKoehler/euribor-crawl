@@ -5,7 +5,7 @@ from config import get_db_config
 
 # Big Query
 # https://cloud.google.com/bigquery/docs/authentication/service-account-file
-from google.cloud import bigquery
+from google.cloud import bigquery, bigquery_storage
 from google.oauth2 import service_account
 
 class Postgres:
@@ -62,6 +62,9 @@ class BigQuery:
                 credentials=credentials, 
                 project=credentials.project_id,
             )         
+            self.storage = bigquery_storage.BigQueryReadClient(
+                credentials=credentials
+            )         
 
         except Exception as error:
             raise(error)
@@ -98,3 +101,11 @@ class BigQuery:
                 table.num_rows, len(table.schema), table_id
             )
         )
+
+    def get_dataframe(self, query):
+        '''
+        '''
+        df = (
+            self.client.query(query).result().to_dataframe(self.storage)
+        )
+        return df
